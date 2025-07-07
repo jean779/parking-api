@@ -105,13 +105,16 @@ http://localhost:8080
 
 ### 🔧 Estrutura dos serviços Docker
 
-- **estapar-db**: banco de dados PostgreSQL
+- **estapar-db**: banco de dados PostgreSQL  
   - Porta local: `5433` (mapeada para `5432` no container)
-- **garage**: simulador fornecido pela Estapar
-  - Expõe `/garage` e `/webhook`
-- **estapar-app**: aplicação Spring Boot
-  - Usa o profile `docker` com as configurações corretas
 
+- **garage**: simulador fornecido pela Estapar  
+  - Expõe apenas o endpoint `GET /garage` para configuração da garagem
+
+- **estapar-app**: aplicação Spring Boot  
+  - Porta local: `8080`  
+  - Expõe os endpoints da API (incluindo `POST /webhook`)  
+  - Usa o profile `docker` com as configurações corretas
 ---
 
 ## 🧪 Testes
