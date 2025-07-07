@@ -1,6 +1,4 @@
-# Estapar Parking Management API
-
-Projeto desenvolvido como parte de um teste técnico para vaga de Desenvolvedor Backend Java/Kotlin Sênior.
+# Parking Management API
 
 ## 🚀 Objetivo
 Criar um sistema de gestão de estacionamentos com controle de:
