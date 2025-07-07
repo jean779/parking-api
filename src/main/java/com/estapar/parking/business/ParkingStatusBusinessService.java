@@ -37,8 +37,15 @@ public class ParkingStatusBusinessService {
                 .findFirstByPlateAndExitTimeIsNullOrderByEntryTimeDesc(licensePlate)
                 .orElseThrow(() -> new ResourceNotFoundException("No active entry found for license plate " + licensePlate));
 
-        BigDecimal price = priceCalculationService.calculatePrice(entry);
-        Duration timeParked = Duration.between(entry.getEntryTime(), LocalDateTime.now());
+        BigDecimal price = entry.getSpot() != null
+                ? priceCalculationService.calculatePrice(entry)
+                : BigDecimal.ZERO;
+
+        LocalDateTime endTime = entry.getExitTime() != null
+                ? entry.getExitTime()
+                : LocalDateTime.now();
+
+        Duration timeParked = Duration.between(entry.getEntryTime(), endTime);
 
         return PlateStatusResponse.builder()
                 .licensePlate(licensePlate)
@@ -53,22 +60,24 @@ public class ParkingStatusBusinessService {
         ParkingSpot spot = parkingSpotRepository.findByLatAndLng(lat, lng)
                 .orElseThrow(() -> new ResourceNotFoundException("Parking spot not found for coordinates: " + lat + ", " + lng));
 
-        Optional<VehicleEntry> optionalEntry = vehicleEntryRepository.findFirstBySpotAndExitTimeIsNullOrderByEntryTimeDesc(spot);
+        if (spot.isOccupied()) {
+            Optional<VehicleEntry> optionalEntry = vehicleEntryRepository.findFirstBySpotAndExitTimeIsNullOrderByEntryTimeDesc(spot);
 
-        if (optionalEntry.isPresent()) {
-            VehicleEntry entry = optionalEntry.get();
-            LocalDateTime now = LocalDateTime.now();
+            if (optionalEntry.isPresent()) {
+                VehicleEntry entry = optionalEntry.get();
+                LocalDateTime now = LocalDateTime.now();
 
-            return SpotStatusResponse.builder()
-                    .occupied(true)
-                    .entryTime(entry.getEntryTime())
-                    .timeParked(TimeUtils.formatDuration(Duration.between(entry.getEntryTime(), now)))
-                    .build();
-        } else {
-            return SpotStatusResponse.builder()
-                    .occupied(false)
-                    .build();
+                return SpotStatusResponse.builder()
+                        .occupied(true)
+                        .entryTime(entry.getEntryTime())
+                        .timeParked(TimeUtils.formatDuration(Duration.between(entry.getEntryTime(), now)))
+                        .build();
+            }
         }
+
+        return SpotStatusResponse.builder()
+                .occupied(false)
+                .build();
     }
 
     public Page<PlateHistoryResponse> getPlateHistory(PlateHistoryRequest request) {

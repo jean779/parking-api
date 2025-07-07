@@ -16,7 +16,5 @@ public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Intege
     @Query("SELECT COUNT(p) FROM ParkingSpot p WHERE p.sector.sector = :sectorCode AND p.occupied = true")
     int countBySectorCodeAndOccupiedTrue(@Param("sectorCode") String sectorCode);
 
-
-
     Optional<ParkingSpot> findByLatAndLng(Double lat, Double lng);
 }
