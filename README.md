@@ -42,6 +42,16 @@ O sistema consome dados via webhook e inicializa a configuração da garagem com
 
 ---
 
+### Regras Adicionais
+- Saída sem estacionamento  
+  Caso o veículo entre e saia sem nunca ter estacionado, **nenhuma cobrança será aplicada**.  
+  Situações cobertas por essa regra incluem:
+  - Mudança de ideia pelo motorista
+  - Falta de vagas visíveis
+  - Entrada acidental na garagem
+
+---
+
 ## 🔁 Perfis da aplicação
 
 | Perfil   | Finalidade                      | Banco        |
