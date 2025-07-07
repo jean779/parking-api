@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  estapar-db:
+    image: postgres:15
+    container_name: estapar-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: estapar
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - estapar-network
+
+  estapar-app:
+    build:
+      context: ../
+      dockerfile: docker/app/Dockerfile
+    container_name: estapar-app
+    depends_on:
+      - estapar-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://estapar-db:5432/estapar
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      GARAGE_API_URL: http://garage:3000/garage
+    ports:
+      - "8080:8080"
+    networks:
+      - estapar-network
+
+  garage:
+    image: cfontes0estapar/garage-sim:1.0.0
+    container_name: garage
+    ports:
+      - "3000:3000"
+      - "3003:3003"
+    networks:
+      - estapar-network
+
+volumes:
+  pgdata:
+
+networks:
+  estapar-network:

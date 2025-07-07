@@ -12,7 +12,12 @@ services:
       POSTGRES_DB: estapar
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - estapar-network
     restart: unless-stopped
 
 volumes:
   pgdata:
+
+networks:
+  estapar-network:

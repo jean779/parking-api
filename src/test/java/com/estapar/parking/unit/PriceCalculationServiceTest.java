@@ -101,8 +101,10 @@ public class PriceCalculationServiceTest {
     // === Helpers ===
 
     private VehicleEntry createEntry(long minutesParked) {
+        LocalDateTime now = LocalDateTime.now();
         VehicleEntry entry = new VehicleEntry();
-        entry.setEntryTime(LocalDateTime.now().minusMinutes(minutesParked));
+        entry.setEntryTime(now.minusMinutes(minutesParked));
+        entry.setExitTime(now);
         entry.setSpot(mockSpot(SECTOR_CODE, BASE_PRICE));
         return entry;
     }
