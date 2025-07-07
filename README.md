@@ -70,8 +70,12 @@ O sistema consome dados via webhook e inicializa a configuração da garagem com
 - `GET /revenue?date=YYYY-MM-DD&sector=A`
 - Retorna faturamento do setor no dia
 
----
 
+## 📚 Documentação da API (Swagger)
+
+A documentação interativa dos endpoints está disponível via Swagger:http://localhost:8080/swagger-ui/index.html
+
+---
 ## 🐳 Como rodar com Docker
 
 ### Pré-requisitos:
