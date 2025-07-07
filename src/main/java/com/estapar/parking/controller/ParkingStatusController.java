@@ -1,10 +1,10 @@
 package com.estapar.parking.controller;
 
+import com.estapar.parking.business.ParkingStatusBusinessService;
 import com.estapar.parking.dto.request.PlateHistoryRequest;
 import com.estapar.parking.dto.response.PlateHistoryResponse;
 import com.estapar.parking.dto.response.PlateStatusResponse;
 import com.estapar.parking.dto.response.SpotStatusResponse;
-import com.estapar.parking.business.ParkingStatusBusinessService;
 import com.estapar.parking.util.api.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,15 +32,8 @@ public class ParkingStatusController {
 
     @GetMapping("/plate-history")
     public ResponseEntity<ApiResponse<Page<PlateHistoryResponse>>> getPlateHistory(
-            @RequestParam String licensePlate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @ModelAttribute PlateHistoryRequest request
     ) {
-        PlateHistoryRequest request = new PlateHistoryRequest();
-        request.setLicensePlate(licensePlate);
-        request.setPage(page);
-        request.setSize(size);
-
         Page<PlateHistoryResponse> response = parkingStatusBusinessService.getPlateHistory(request);
         return ResponseEntity.ok(ApiResponse.success(response));
     }

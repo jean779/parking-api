@@ -110,7 +110,6 @@ public class WebhookBusinessService {
         vehicleEntryRepository.save(entry);
     }
 
-
     private void handleExit(WebhookEventRequest dto) {
         if (dto.getExitTime() == null || dto.getExitTime().isBlank()) {
             log.warn("Missing exitTime for EXIT event on plate {}", dto.getLicensePlate());
@@ -141,4 +140,5 @@ public class WebhookBusinessService {
         vehicleEntryRepository.save(entry);
         log.info("Vehicle exit recorded for plate {}", dto.getLicensePlate());
     }
+
 }
