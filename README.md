@@ -31,9 +31,9 @@ O sistema consome dados via webhook e inicializa a configuração da garagem com
 ### Webhook de eventos de veículos
 - Endpoint: `POST /webhook`
 - Eventos suportados:
-    - `ENTRY`: entrada do veículo
-    - `PARKED`: associação do veículo a uma vaga
-    - `EXIT`: saída e cálculo de preço
+  - `ENTRY`: entrada do veículo
+  - `PARKED`: associação do veículo a uma vaga
+  - `EXIT`: saída e cálculo de preço
 
 ### Regras de Negócio Implementadas
 - Carência de 15 minutos sem cobrança
@@ -42,21 +42,33 @@ O sistema consome dados via webhook e inicializa a configuração da garagem com
 - Fechamento do setor ao atingir 100% da capacidade
 - Verificação de horário de funcionamento dos setores
 
-### Consultas REST
+---
 
-#### Placa
+## 🔁 Perfis da aplicação
+
+| Perfil   | Finalidade                      | Banco        |
+|----------|----------------------------------|--------------|
+| `dev`    | Desenvolvimento local            | PostgreSQL   |
+| `docker` | Execução via Docker              | PostgreSQL   |
+| `test`   | Execução de testes automatizados | H2 in-memory |
+
+---
+
+## 🔎 Consultas REST
+
+### Placa
 - `GET /parking-status/plate?license_plate=XXX`
 - Retorna status da placa: tempo estacionado e valor atual
 
-#### Histórico de Placa
+### Histórico de Placa
 - `GET /parking-status/plate-history?licensePlate=XXX&page=0&size=10`
 - Lista entradas e saídas de uma placa paginadas
 
-#### Vaga
+### Vaga
 - `GET /parking-status/spot?lat=...&lng=...`
 - Retorna se a vaga está ocupada e tempo de uso
 
-#### Faturamento
+### Faturamento
 - `GET /revenue?date=YYYY-MM-DD&sector=A`
 - Retorna faturamento do setor no dia
 
@@ -92,26 +104,33 @@ http://localhost:8080
 ### 🔧 Estrutura dos serviços Docker
 
 - **estapar-db**: banco de dados PostgreSQL
-    - Porta local: `5433` (mapeada para `5432` no container)
+  - Porta local: `5433` (mapeada para `5432` no container)
 - **garage**: simulador fornecido pela Estapar
-    - Expõe `/garage` e `/webhook`
+  - Expõe `/garage` e `/webhook`
 - **estapar-app**: aplicação Spring Boot
-    - Usa o profile `docker` com as configurações corretas
+  - Usa o profile `docker` com as configurações corretas
 
 ---
 
 ## 🧪 Testes
 
-### Testes Unitários
-- Testes com JUnit e Mockito para serviços como:
-    - Validação de entrada duplicada
-    - Verificação de setor fechado
-    - Cálculo de preço com carência e pró-rata
+### ✅ Testes Unitários
+- Executados com `./gradlew test`
+- Usam JUnit e Mockito para validar regras de negócio como:
+  - Entrada duplicada
+  - Setor fechado
+  - Cálculo de preço
 
-### Testes de Integração
-- Utiliza `@SpringBootTest` com `MockMvc` para simular:
-    - Webhook recebendo eventos reais
-    - Consulta REST de placa, vaga, faturamento
+### 🧪 Testes de Integração
+- Utilizam `@SpringBootTest` com `MockMvc` e banco H2
+- Valida o funcionamento completo dos endpoints e regras
+
+#### Execução manual:
+```bash
+./gradlew integrationTest
+```
+
+> ⚠️ Os testes de integração **não são executados no GitHub Actions** por padrão para evitar falhas por dependências externas.
 
 ---
 
