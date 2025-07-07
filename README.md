@@ -80,6 +80,11 @@ O sistema consome dados via webhook e inicializa a configuração da garagem com
 - `GET /revenue?date=YYYY-MM-DD&sector=A`
 - Retorna faturamento do setor no dia
 
+### Histórico de Faturamento
+- `GET /revenue/revenue-history?start=YYYY-MM-DD&end=YYYY-MM-DD&sector=A&page=0&size=10`
+- Lista o faturamento agrupado por data de saída e setor, com paginação
+
+
 
 ## 📚 Documentação da API (Swagger)
 
