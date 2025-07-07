@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres-estapar:
+    image: postgres:15
+    container_name: postgres-estapar
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: estapar
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
