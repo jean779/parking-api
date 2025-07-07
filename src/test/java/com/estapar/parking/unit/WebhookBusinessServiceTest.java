@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -202,11 +203,13 @@ class WebhookBusinessServiceTest {
         dto.setEventType(EventType.EXIT);
 
         VehicleEntry entry = new VehicleEntry();
+        ParkingSpot spot = new ParkingSpot();
+        entry.setSpot(spot);
 
         when(vehicleEntryRepository.findFirstByPlateAndExitTimeIsNullOrderByEntryTimeDesc("ABC1D23"))
                 .thenReturn(Optional.of(entry));
 
-        when(priceCalculationService.calculatePrice(entry)).thenReturn(java.math.BigDecimal.TEN);
+        when(priceCalculationService.calculatePrice(entry)).thenReturn(BigDecimal.TEN);
         when(vehicleEntryRepository.save(any())).thenReturn(entry);
 
         assertDoesNotThrow(() -> service.processWebhookEvent(dto));
