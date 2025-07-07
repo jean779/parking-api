@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -125,10 +126,19 @@ public class WebhookBusinessService {
                 });
 
         entry.setExitTime(exitTime);
-        entry.setPrice(priceCalculationService.calculatePrice(entry));
         entry.setStatus(VehicleStatus.EXITED);
-        vehicleEntryRepository.save(entry);
 
+        if (entry.getSpot() != null) {
+            entry.setPrice(priceCalculationService.calculatePrice(entry));
+            entry.getSpot().setOccupied(false);
+            parkingService.saveSpot(entry.getSpot());
+            log.info("Vehicle {} exited from occupied spot id {} with calculated price.", dto.getLicensePlate(), entry.getSpot().getId());
+        } else {
+            entry.setPrice(BigDecimal.ZERO);
+            log.info("Vehicle {} exited without occupying a spot. No charge applied.", dto.getLicensePlate());
+        }
+
+        vehicleEntryRepository.save(entry);
         log.info("Vehicle exit recorded for plate {}", dto.getLicensePlate());
     }
 }
