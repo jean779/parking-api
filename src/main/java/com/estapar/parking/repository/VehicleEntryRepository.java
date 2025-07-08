@@ -35,7 +35,7 @@ public interface VehicleEntryRepository extends JpaRepository<VehicleEntry, Long
     FROM VehicleEntry v
     WHERE (:sector IS NULL OR v.spot.sector.sector = :sector)
       AND v.exitTime BETWEEN :start AND :end
-    GROUP BY v.exitTime, v.spot.sector.sector
+    GROUP BY  v.spot.sector.sector, v.exitTime
     ORDER BY v.exitTime DESC
     """)
     Page<RevenueHistoryResponse> findRevenueGroupedByDateAndSector(
