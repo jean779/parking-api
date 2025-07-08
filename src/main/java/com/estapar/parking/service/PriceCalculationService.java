@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Service
@@ -30,8 +31,12 @@ public class PriceCalculationService {
     }
 
     private long calculateMinutesParked(VehicleEntry entry) {
-        return ChronoUnit.MINUTES.between(entry.getEntryTime(), entry.getExitTime());
+        LocalDateTime endTime = entry.getExitTime() != null
+                ? entry.getExitTime()
+                : LocalDateTime.now();
+        return ChronoUnit.MINUTES.between(entry.getEntryTime(), endTime);
     }
+
 
     private BigDecimal calculateDynamicBasePrice(String sectorCode, double rawBasePrice) {
         int totalSpots = parkingSpotRepository.countBySectorCode(sectorCode);

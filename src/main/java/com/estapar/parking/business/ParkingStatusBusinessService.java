@@ -12,6 +12,7 @@ import com.estapar.parking.repository.VehicleEntryRepository;
 import com.estapar.parking.service.PriceCalculationService;
 import com.estapar.parking.util.date.TimeUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -21,9 +22,9 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ParkingStatusBusinessService {
@@ -32,20 +33,25 @@ public class ParkingStatusBusinessService {
     private final PriceCalculationService priceCalculationService;
     private final ParkingSpotRepository parkingSpotRepository;
 
+
     public PlateStatusResponse getPlateStatus(String licensePlate) {
+        log.debug("Checking status for plate {}", licensePlate);
+
         VehicleEntry entry = vehicleEntryRepository
                 .findFirstByPlateAndExitTimeIsNullOrderByEntryTimeDesc(licensePlate)
-                .orElseThrow(() -> new ResourceNotFoundException("No active entry found for license plate " + licensePlate));
+                .orElseThrow(() -> {
+                    log.warn("No active entry found for license plate {}", licensePlate);
+                    return new ResourceNotFoundException("No active entry found for license plate " + licensePlate);
+                });
 
         BigDecimal price = entry.getSpot() != null
                 ? priceCalculationService.calculatePrice(entry)
                 : BigDecimal.ZERO;
 
-        LocalDateTime endTime = entry.getExitTime() != null
-                ? entry.getExitTime()
-                : LocalDateTime.now();
-
+        LocalDateTime endTime = entry.getExitTime() != null ? entry.getExitTime() : LocalDateTime.now();
         Duration timeParked = Duration.between(entry.getEntryTime(), endTime);
+
+        log.info("Plate {} parked for {} minutes, price so far: {}", licensePlate, timeParked.toMinutes(), price);
 
         return PlateStatusResponse.builder()
                 .licensePlate(licensePlate)
@@ -57,32 +63,38 @@ public class ParkingStatusBusinessService {
 
 
     public SpotStatusResponse getSpotStatus(double lat, double lng) {
+        log.debug("Checking spot status at lat={}, lng={}", lat, lng);
+
         ParkingSpot spot = parkingSpotRepository.findByLatAndLng(lat, lng)
-                .orElseThrow(() -> new ResourceNotFoundException("Parking spot not found for coordinates: " + lat + ", " + lng));
+                .orElseThrow(() -> {
+                    log.warn("No spot found at coordinates {}, {}", lat, lng);
+                    return new ResourceNotFoundException("Parking spot not found for coordinates: " + lat + ", " + lng);
+                });
 
         if (spot.isOccupied()) {
-            Optional<VehicleEntry> optionalEntry = vehicleEntryRepository.findFirstBySpotAndExitTimeIsNullOrderByEntryTimeDesc(spot);
-
-            if (optionalEntry.isPresent()) {
-                VehicleEntry entry = optionalEntry.get();
-                LocalDateTime now = LocalDateTime.now();
-
-                return SpotStatusResponse.builder()
-                        .occupied(true)
-                        .entryTime(entry.getEntryTime())
-                        .timeParked(TimeUtils.formatDuration(Duration.between(entry.getEntryTime(), now)))
-                        .build();
-            }
+            return vehicleEntryRepository.findFirstBySpotAndExitTimeIsNullOrderByEntryTimeDesc(spot)
+                    .map(entry -> {
+                        Duration duration = Duration.between(entry.getEntryTime(), LocalDateTime.now());
+                        log.info("Spot at lat={}, lng={} is occupied for {} minutes", lat, lng, duration.toMinutes());
+                        return SpotStatusResponse.builder()
+                                .occupied(true)
+                                .entryTime(entry.getEntryTime())
+                                .timeParked(TimeUtils.formatDuration(duration))
+                                .build();
+                    }).orElseGet(() -> {
+                        log.warn("Spot is marked occupied but no vehicle entry found for it.");
+                        return SpotStatusResponse.builder().occupied(true).build();
+                    });
         }
 
-        return SpotStatusResponse.builder()
-                .occupied(false)
-                .build();
+        log.info("Spot at lat={}, lng={} is available", lat, lng);
+        return SpotStatusResponse.builder().occupied(false).build();
     }
 
     public Page<PlateHistoryResponse> getPlateHistory(PlateHistoryRequest request) {
-        PageRequest pageable = PageRequest.of(request.getPage(), request.getSize());
+        log.debug("Fetching plate history: {}", request.getLicensePlate());
 
+        PageRequest pageable = PageRequest.of(request.getPage(), request.getSize());
         Page<VehicleEntry> page = vehicleEntryRepository
                 .findAllByPlateOrderByEntryTimeDesc(request.getLicensePlate(), pageable);
 
@@ -101,6 +113,7 @@ public class ParkingStatusBusinessService {
                     .build();
         }).collect(Collectors.toList());
 
+        log.info("Retrieved {} records of plate history for {}", responseList.size(), request.getLicensePlate());
         return new PageImpl<>(responseList, pageable, page.getTotalElements());
     }
 
